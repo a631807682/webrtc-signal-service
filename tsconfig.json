@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "es2017",
+      "noImplicitAny": false,
+      // "moduleResolution": "node",
+      "sourceMap": true,
+      "outDir": "dist", // TS文件编译后会放入到此文件夹内
+      "watch": true,
+      "baseUrl": "./",
+      "paths": {
+        "@/*": ["./*"],
+      },
+      "plugins": [
+        { 
+          "name": "typescript-tslint-plugin" 
+        }
+      ]
+    },
+    "exclude": [
+      "node_modules*"
+    ]
+  }
