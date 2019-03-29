@@ -5,7 +5,7 @@ export declare interface LiveSocket {
     socket: IO.Socket;
     type: 'guest' | 'server' | 'client';
     name: string;
-    relationship: Array < LiveSocket > ;
+    relationshipKeys: Array < string > ;
 }
 
 

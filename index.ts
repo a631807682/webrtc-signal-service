@@ -26,12 +26,12 @@ io.on('connect', (socket) => {
         socket: socket,
         type: 'guest',
         name: '',
-        relationship: []
+        relationshipKeys: []
     }
     liveSocketList.push(lSocket)
 
     socket.on('message', (message: LiveSocketMessage) => {
-        console.log(message);
+        console.log('recive', message);
         let sendWithComeFromFn = sendWithComeFrom.bind(socket, liveSocketList, message)
         switch (message.event) {
             case 'regist':
@@ -49,7 +49,24 @@ io.on('connect', (socket) => {
                 }
             case 'accept':
                 {
-                    sendWithComeFromFn();
+                    // 客户端发送同意到服务端
+                    let from = findLiveSocket(liveSocketList, socket);
+                    let to = findLiveSocket(liveSocketList, message.to);
+                    // 更新连接状态
+                    if (message.accept) {
+                        to.relationshipKeys.push(from.key);
+                        from.relationshipKeys = [to.key];
+
+                        showUsers(liveSocketList);
+                    }
+                    // 发送同意到对端
+                    let msg = {
+                        from: {
+                            name: from.name,
+                            key: from.key
+                        }
+                    }
+                    sendTo(to.socket, Object.assign(message, msg));
                     break;
                 }
             case 'offer':
@@ -67,6 +84,23 @@ io.on('connect', (socket) => {
                     sendWithComeFromFn();
                     break;
                 }
+            case 'leave':
+                {
+                    let from = findLiveSocket(liveSocketList, socket);
+                    let to = findLiveSocket(liveSocketList, message.to);
+                    from.relationshipKeys = from.relationshipKeys.filter(key => key !== to.key);
+                    to.relationshipKeys = to.relationshipKeys.filter(key => key !== from.key);
+                    // 发送离开消息到对端
+                    let msg = {
+                        from: {
+                            name: from.name,
+                            key: from.key
+                        }
+                    }
+                    sendTo(to.socket, Object.assign(message, msg));
+                    showUsers(liveSocketList);
+                    break;
+                }
 
         }
     })
@@ -75,14 +109,16 @@ io.on('connect', (socket) => {
         let sIndex = findLiveSocketIndex(liveSocketList, socket);
         if (sIndex > -1) {
             let disSocket = liveSocketList[sIndex];
+            // 清除缓存
+            liveSocketList.splice(sIndex, 1);
             // 查找关系 通知离开
             if (disSocket.type === 'server' || disSocket.type === 'client') {
-                for (let lsk of disSocket.relationship) {
-                    showUsers(liveSocketList);
+                for (let liveSocket of liveSocketList) {
+                    liveSocket.relationshipKeys = liveSocket.relationshipKeys.filter(key => key !== disSocket.key);
                 }
+
+                showUsers(liveSocketList);
             }
-            // 清除缓存
-            liveSocketList.splice(sIndex, 1)
         }
     })
 
@@ -118,12 +154,12 @@ function findLiveSocket(sockets: Array < LiveSocket > , socketOrKey: IO.Socket |
 function showUsers(lsockets: Array < LiveSocket > ) {
     let registedls = lsockets.filter(ls => ls.type !== 'guest');
     for (let ls of registedls) {
-        let users = lsockets.map(s => {
+        let users = registedls.map(s => {
             return {
                 key: s.key,
                 type: s.type,
                 name: s.name,
-                relationship: s.relationship.map(r => r.key)
+                relationship: s.relationshipKeys
             }
         });
         sendTo(ls.socket, {
