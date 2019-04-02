@@ -3,7 +3,7 @@ import * as IO from 'socket.io';
 export declare interface LiveSocket {
     key: string;
     socket: IO.Socket;
-    type: 'guest' | 'server' | 'client';
+    type: 'guest' | 'watcher' | 'collector';
     name: string;
     relationshipKeys: Array < string > ;
 }

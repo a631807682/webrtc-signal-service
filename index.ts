@@ -112,7 +112,7 @@ io.on('connect', (socket) => {
             // 清除缓存
             liveSocketList.splice(sIndex, 1);
             // 查找关系 通知离开
-            if (disSocket.type === 'server' || disSocket.type === 'client') {
+            if (disSocket.type === 'watcher' || disSocket.type === 'collector') {
                 for (let liveSocket of liveSocketList) {
                     liveSocket.relationshipKeys = liveSocket.relationshipKeys.filter(key => key !== disSocket.key);
                 }
