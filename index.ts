@@ -1,15 +1,15 @@
 import * as IO from 'socket.io';
 import * as fs from 'fs';
 import * as https from 'https'
+
 import {
     LiveSocket,
     LiveSocketMessage
 } from '@/interfaces'
 
 const options = {
-    key: fs.readFileSync('./ssl/key.pem'),
-    cert: fs.readFileSync('./ssl/cert.pem'),
-    passphrase: '123456789'
+    key: fs.readFileSync('./ssl/domain.key'),
+    cert: fs.readFileSync('./ssl/domain.crt'),
 };
 const port = 3001;
 const server = https.createServer(options).listen(port, () => {
